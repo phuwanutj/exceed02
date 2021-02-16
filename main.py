@@ -86,9 +86,9 @@ def find_queue():
 
     for ele in query:
         output.append({
-                "Q_queueId": ele["Q_queueId"],
-                "Q_userId": ele["Q_userId"],
-                "Q_shopId": ele["Q_shopId"],
+                "Q_queueID": ele["Q_queueID"],
+                "Q_userID": ele["Q_userID"],
+                "Q_shopID": ele["Q_shopID"],
                 "Q_createDate": ele["Q_createDate"],
                 "Q_receiveDate": ele["Q_receiveDate"],
                 "Q_status": ele["Q_status"],
