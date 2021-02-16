@@ -160,3 +160,75 @@ def find_wristband():
                 })
 
     return {"result": output}
+
+
+@app.route('/update_shop_total_amount', methods=['PATCH'])
+def update_total_amount():
+    data = request.json
+
+    filt = {'S_shopID': 0}
+    updated_content = {"$set": {'S_total_amount' : data["S_total_amount"]}}
+
+    S_myCollection.update_total_amount(filt, updated_content)
+
+    return {'result' : 'Updated successfully!'}
+
+
+@app.route('/update_shop_limit_amount', methods=['PATCH'])
+def update_limit_amount():
+    data = request.json
+
+    filt = {'S_shopID': 0}
+    updated_content = {"$set": {'S_limit_amount' : data["S_limit_amount"]}}
+
+    S_myCollection.update_limit_amount(filt, updated_content)
+
+    return {'result' : 'Updated successfully!'}
+
+
+@app.route('/update_shop_current_amount', methods=['PATCH'])
+def update_current_amount():
+    data = request.json
+
+    filt = {'S_shopID': 0}
+    updated_content = {"$set": {'S_current_amount' : data["S_current_amount"]}}
+
+    S_myCollection.update_current_amount(filt, updated_content)
+
+    return {'result' : 'Updated successfully!'}
+
+
+@app.route('/update_shop_time_limit', methods=['PATCH'])
+def update_limit_limit():
+    data = request.json
+
+    filt = {'S_shopID': 0}
+    updated_content = {"$set": {'S_time_limit' : data["S_time_limit"]}}
+
+    S_myCollection.update_time_limit(filt, updated_content)
+
+    return {'result' : 'Updated successfully!'}
+
+
+@app.route('/update_shop_lastest_time_enter', methods=['PATCH'])
+def update_lastest_time_enter():
+    data = request.json
+
+    filt = {'S_shopID': 0}
+    updated_content = {"$set": {'S_lastest_time_enter' : data["S_lastest_time_enter"]}}
+
+    S_myCollection.update_lastest_time_enter(filt, updated_content)
+
+    return {'result' : 'Updated successfully!'}
+
+
+@app.route('/update_shop_lastest_time_left', methods=['PATCH'])
+def update_lastest_time_left():
+    data = request.json
+
+    filt = {'S_shopID': 0}
+    updated_content = {"$set": {'S_lastest_time_left' : data["S_lastest_time_left"]}}
+
+    S_myCollection.update_lastest_time_left(filt, updated_content)
+
+    return {'result' : 'Updated successfully!'}
