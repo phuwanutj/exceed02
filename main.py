@@ -12,10 +12,36 @@ Q_myCollection = mongo.db.Queue
 W_myCollection = mongo.db.Wristband
 
 
+@app.route('/find_all_user', methods=['GET'])
+def find_all_user():
+
+    filt = {}
+
+    query = U_myCollection.find(filt)
+    output = []
+
+    for ele in query:
+        output.append({
+                "U_UserID": ele["U_UserID"],
+                "U_Username": ele["U_Username"],
+                "U_email": ele["U_email"],
+                "U_age": ele["U_age"],
+                "U_gender": ele["U_age"],
+                "U_name": ele["U_name"],
+                "U_surname": ele["U_surname"],
+                "U_occupation": ele["U_occupation"],
+                "U_catId": ele["U_catId"]
+                })
+
+    return {"result": output}
+
+
 @app.route('/find_user', methods=['GET'])
 def find_user():
 
-    filt = {}
+    username = request.args.get('U_Username')
+    password = request.args.get('U_password')
+    filt = {"U_Username": username, "U_password": password}
 
     query = U_myCollection.find(filt)
     output = []
@@ -76,10 +102,32 @@ def find_category():
     return {"result": output}
 
 
+@app.route('/find_all_queue', methods=['GET'])
+def find_all_queue():
+
+    filt = {}
+
+    query = Q_myCollection.find(filt)
+    output = []
+
+    for ele in query:
+        output.append({
+                "Q_queueID": ele["Q_queueID"],
+                "Q_userID": ele["Q_userID"],
+                "Q_shopID": ele["Q_shopID"],
+                "Q_createDate": ele["Q_createDate"],
+                "Q_receiveDate": ele["Q_receiveDate"],
+                "Q_status": ele["Q_status"],
+                })
+
+    return {"result": output}
+
+
 @app.route('/find_queue', methods=['GET'])
 def find_queue():
 
-    filt = {}
+    id = request.args.get('Q_quueueID')
+    filt = {"Q_queueID": id}
 
     query = Q_myCollection.find(filt)
     output = []
