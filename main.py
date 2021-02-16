@@ -1,5 +1,6 @@
 from flask import Flask, request
 from flask_pymongo import PyMongo
+from datetime import datetime
 
 app = Flask(__name__)
 app.config['MONGO_URI'] = 'mongodb://exceed_group02:tg52cdr5@158.108.182.0:2255/exceed_group02'
@@ -155,8 +156,11 @@ def find_wristband():
 
     for ele in query:
         output.append({
-                "W_timestamp": ele["W_timestamp"],
-                "W_username": ele["W_username"],
+                "W_timestamp_in": ele["W_timestamp_in"],
+                "W_timestamp_out": ele["W_timestamp_out"],
+                "W_status": ele["W_status"],
+                "W_UserID": ele["W_UserID"],
+                "W_wristbandID": ele["W_wristbandID"],
                 })
 
     return {"result": output}
@@ -169,7 +173,7 @@ def update_total_amount():
     filt = {'S_shopID': 0}
     updated_content = {"$set": {'S_total_amount' : data["S_total_amount"]}}
 
-    S_myCollection.update_total_amount(filt, updated_content)
+    S_myCollection.update_one(filt, updated_content)
 
     return {'result' : 'Updated successfully!'}
 
@@ -181,7 +185,7 @@ def update_limit_amount():
     filt = {'S_shopID': 0}
     updated_content = {"$set": {'S_limit_amount' : data["S_limit_amount"]}}
 
-    S_myCollection.update_limit_amount(filt, updated_content)
+    S_myCollection.update_one(filt, updated_content)
 
     return {'result' : 'Updated successfully!'}
 
@@ -193,7 +197,7 @@ def update_current_amount():
     filt = {'S_shopID': 0}
     updated_content = {"$set": {'S_current_amount' : data["S_current_amount"]}}
 
-    S_myCollection.update_current_amount(filt, updated_content)
+    S_myCollection.update_one(filt, updated_content)
 
     return {'result' : 'Updated successfully!'}
 
@@ -205,7 +209,7 @@ def update_limit_limit():
     filt = {'S_shopID': 0}
     updated_content = {"$set": {'S_time_limit' : data["S_time_limit"]}}
 
-    S_myCollection.update_time_limit(filt, updated_content)
+    S_myCollection.update_one(filt, updated_content)
 
     return {'result' : 'Updated successfully!'}
 
@@ -217,7 +221,7 @@ def update_lastest_time_enter():
     filt = {'S_shopID': 0}
     updated_content = {"$set": {'S_lastest_time_enter' : data["S_lastest_time_enter"]}}
 
-    S_myCollection.update_lastest_time_enter(filt, updated_content)
+    S_myCollection.update_one(filt, updated_content)
 
     return {'result' : 'Updated successfully!'}
 
@@ -229,6 +233,100 @@ def update_lastest_time_left():
     filt = {'S_shopID': 0}
     updated_content = {"$set": {'S_lastest_time_left' : data["S_lastest_time_left"]}}
 
-    S_myCollection.update_lastest_time_left(filt, updated_content)
+    S_myCollection.update_one(filt, updated_content)
 
     return {'result' : 'Updated successfully!'}
+
+
+@app.route('/add_wristband', methods=['POST'])
+def add_wristband():
+    data = request.json
+    myInsert = {
+                "W_timestamp_in": 0,
+                "W_timestamp_out": 0,
+                "W_status": 0,
+                "W_UserID": data["W_UserID"],
+                "W_wristbandID": data["W_wristbandID"],
+            }
+    W_myCollection.insert_one(myInsert)
+    return {'result': 'Created successfully'}
+
+
+@app.route('/update_timestamp', methods=['PATCH'])
+def update_timestamp():
+    data = request.json
+
+    filt = {'W_wristbandID': data["W_wristbandID"], 'W_status': 0}
+    query = W_myCollection.find_one(filt)
+    shop = S_myCollection.find_one({'S_shopID': 0})
+    if (data["W_status"] == 0) :
+        updated_content = {"$set": {'W_status' : 0, 'W_timestamp_in': datetime.timestamp(datetime.now())}}
+        W_myCollection.update_one(filt, updated_content)
+        return {'result' : shop["S_time_limit"]}
+    elif (data["W_status"] == 1 and query["W_status"] == 0) :
+        updated_content = {"$set": {'W_status' : 1, 'W_timestamp_out': datetime.timestamp(datetime.now())}}
+        W_myCollection.update_one(filt, updated_content)
+        return {'result': "Time out"}
+
+
+@app.route('/member', methods=['POST'])
+def user_data_input():
+    data = request.json
+    data['U_UserID'] = U_myCollection.find().count()
+    U_myCollection.insert_one(data)
+    return { "Result" : data['U_UserID'] }
+
+
+@app.route('/queue', methods=['POST'])
+def queue_data_input():
+    data = request.json
+    data['Q_queueID'] = Q_myCollection.find().count()
+    data['Q_status'] = 0
+    data['Q_receiveDate'] = 0
+    data['Q_lenuser'] = len(data['Q_userID'])
+    timestamp = datetime.timestamp(datetime.now())
+    data['Q_createDate'] = timestamp
+    Q_myCollection.insert_one(data)
+    return {
+            'Q_queueID' :  data['Q_queueID']
+            ,'Q_createDate' : data['Q_createDate']
+    }
+
+
+@app.route('/queue', methods=['PATCH'])
+def queue_data_update():
+    data = request.json
+    filt = { "Q_queueID": data['Q_queueID']}
+    query = Q_myCollection.find_one(filt)
+    output = {
+        "Q_userID" : query["Q_userID"]
+        ,"Q_shopID" : query["Q_shopID"]
+        ,"Q_queueID" : query["Q_queueID"]
+        ,"Q_status" : query["Q_status"]
+        ,"Q_receiveDate" : query["Q_receiveDate"]
+        ,"Q_lenuser" : query["Q_lenuser"]
+        ,"Q_createDate" : query["Q_createDate"]
+    }
+    #if(output['Q_status']==1):
+    #    return { "Result" : "QR already use" }
+    timestamp = datetime.timestamp(datetime.now())
+    output['Q_receiveDate'] = timestamp
+    output['Q_status'] = 1
+    name = []
+    for i in range (len(output["Q_userID"])):
+        filte = { "U_UserID": output["Q_userID"][i]}
+        queryy = U_myCollection.find_one(filte)
+        name.append(queryy["U_Username"])
+
+    updated_content = {"$set":output}
+    Q_myCollection.update_one(filt, updated_content)
+    return {
+        "Q_queueID" : output["Q_queueID"]
+        ,"Q_lenuser" : output["Q_lenuser"]
+        ,"Q_userID" : output["Q_userID"]
+        ,"name" : name
+    }
+
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port='3000', debug=True)
