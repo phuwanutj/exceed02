@@ -11,6 +11,7 @@ S_myCollection = mongo.db.Shop
 C_myCollection = mongo.db.Category
 Q_myCollection = mongo.db.Queue
 W_myCollection = mongo.db.Wristband
+Wr_myCollection = mongo.db.Wr
 
 
 @app.route('/find_all_user', methods=['GET'])
@@ -238,20 +239,6 @@ def update_lastest_time_left():
     return {'result' : 'Updated successfully!'}
 
 
-@app.route('/add_wristband', methods=['POST'])
-def add_wristband():
-    data = request.json
-    myInsert = {
-                "W_timestamp_in": 0,
-                "W_timestamp_out": 0,
-                "W_status": 0,
-                "W_UserID": data["W_UserID"],
-                "W_wristbandID": data["W_wristbandID"],
-            }
-    W_myCollection.insert_one(myInsert)
-    return {'result': 'Created successfully'}
-
-
 @app.route('/update_timestamp', methods=['PATCH'])
 def update_timestamp():
     data = request.json
@@ -272,6 +259,10 @@ def update_timestamp():
 @app.route('/member', methods=['POST'])
 def user_data_input():
     data = request.json
+    filt = { "U_Username": data['U_Username']}
+    query = U_myCollection.find(filt).count()
+    if(query > 0):
+        return { "Result":"Username already use" }
     data['U_UserID'] = U_myCollection.find().count()
     U_myCollection.insert_one(data)
     return { "Result" : data['U_UserID'] }
@@ -280,16 +271,26 @@ def user_data_input():
 @app.route('/queue', methods=['POST'])
 def queue_data_input():
     data = request.json
+    filt = { "U_Username": data['Q_Username'] , "U_password" : data['Q_password']}
+    query = U_myCollection.find(filt).count()
+    if(query == 0):
+        return { "Result":"Wrong Username or Password" }
+    query = U_myCollection.find_one(filt)
+    data['Q_UserID'] = query["U_UserID"]
+
+    filt = { "Q_UserID": data['Q_UserID'] , "Q_status" : 0}
+    query = Q_myCollection.find(filt).count()
+    if(query > 0):
+        return { "Result":"This Username already in queue" }
+
     data['Q_queueID'] = Q_myCollection.find().count()
     data['Q_status'] = 0
-    data['Q_receiveDate'] = 0
-    data['Q_lenuser'] = len(data['Q_userID'])
     timestamp = datetime.timestamp(datetime.now())
-    data['Q_createDate'] = timestamp
+    data['Q_updateDate'] = timestamp
     Q_myCollection.insert_one(data)
     return {
             'Q_queueID' :  data['Q_queueID']
-            ,'Q_createDate' : data['Q_createDate']
+            ,'Q_updateDate' : data['Q_updateDate']
     }
 
 
@@ -299,33 +300,81 @@ def queue_data_update():
     filt = { "Q_queueID": data['Q_queueID']}
     query = Q_myCollection.find_one(filt)
     output = {
-        "Q_userID" : query["Q_userID"]
+        "Q_UserID" : query["Q_UserID"]
         ,"Q_shopID" : query["Q_shopID"]
         ,"Q_queueID" : query["Q_queueID"]
         ,"Q_status" : query["Q_status"]
-        ,"Q_receiveDate" : query["Q_receiveDate"]
-        ,"Q_lenuser" : query["Q_lenuser"]
-        ,"Q_createDate" : query["Q_createDate"]
+        ,"Q_updateDate" : query["Q_updateDate"]
+        ,"Q_Username" : query["Q_Username"]
+        ,"Q_password" : query["Q_password"]
     }
-    #if(output['Q_status']==1):
-    #    return { "Result" : "QR already use" }
     timestamp = datetime.timestamp(datetime.now())
-    output['Q_receiveDate'] = timestamp
-    output['Q_status'] = 1
-    name = []
-    for i in range (len(output["Q_userID"])):
-        filte = { "U_UserID": output["Q_userID"][i]}
-        queryy = U_myCollection.find_one(filte)
-        name.append(queryy["U_Username"])
-
+    output['Q_updateDate'] = timestamp
+    output['Q_status'] = data["Q_status"]
     updated_content = {"$set":output}
     Q_myCollection.update_one(filt, updated_content)
     return {
         "Q_queueID" : output["Q_queueID"]
-        ,"Q_lenuser" : output["Q_lenuser"]
-        ,"Q_userID" : output["Q_userID"]
-        ,"name" : name
+        ,"Q_userID" : output["Q_UserID"]
+        ,"Q_Username" : output["Q_Username"]
     }
+
+
+@app.route('/queue', methods=['GET'])
+def queue_data_get():
+    filt = { "Q_status" : 0 }
+    query = Q_myCollection.find(filt)
+    output = []
+    for ele in query:
+        output.append({
+                "Q_UserID" : ele["Q_UserID"]
+                ,"Q_Username" : ele["Q_Username"]
+                ,"Q_queueID" : ele["Q_queueID"]
+                ,"Q_status" : ele["Q_status"]
+                ,"Q_updateDate" : ele["Q_updateDate"]
+                ,"Q_shopID" : ele["Q_shopID"]
+            })
+    return { "Result" : output }
+
+
+@app.route('/add_wristband', methods=['POST'])
+def add_wristband():
+    data = request.json
+    filt = { "W_wristbandID": data['W_wristbandID'] , "W_status" : 0}
+    query = W_myCollection.find(filt).count()
+    if (query>0):
+        return { "Result" : "This wristband is using now."}
+    myInsert = {
+                "W_timestamp_in": 0,
+                "W_timestamp_out": 0,
+                "W_status": 0,
+                "W_UserID": data["W_UserID"],
+                "W_wristbandID": data["W_wristbandID"],
+            }
+    W_myCollection.insert_one(myInsert)
+
+    filt = { "Wr_wristbandID": data['Wr_wristbandID'] }
+    query = Wr_myCollection.find_one(filt)
+    output = {
+            "Wr_wristbandID" : query["Wr_wristbandID"]
+            ,"Wr_status" : 1
+            }
+    updated_content = {"$set":output}
+    Wr_myCollection.update_one(filt, updated_content)
+
+    return {'result': 'Created successfully'}
+
+
+@app.route('/get_wristband', methods=['GET'])
+def get_wristband():
+    data = request.json
+    filt = { "Wr_status" : data["Wr_status"]}
+    query = Wr_myCollection.find(filt)
+    output = []
+    for ele in query:
+        output.append(ele["Wr_wristbandID"])
+    return {"Result" : output
+            ,"Wr_status" : data["Wr_status"]}
 
 
 if __name__ == "__main__":
