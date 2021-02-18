@@ -377,5 +377,47 @@ def get_wristband():
             ,"Wr_status" : data["Wr_status"]}
 
 
+@app.route('/get_graph1', methods=['GET'])
+def get_graph1():
+    data = request.json
+    filt = { "Q_shopID" : data["Q_shopID"]}
+    query = Q_myCollection.find(filt)
+    output = []
+    for ele in query:
+        filt_u = { "U_UserID" : ele["Q_UserID"]}
+        query1 = U_myCollection.find_one(filt_u)
+        output.append(query1["U_age"])
+    num = query.count()
+    return {"Result" : output, "Amount": num}
+
+
+@app.route('/get_graph2', methods=['GET'])
+def get_graph2():
+    data = request.json
+    filt = { "Q_shopID" : data["Q_shopID"]}
+    query = Q_myCollection.find(filt)
+    output = []
+    for ele in query:
+        filt_u = { "U_UserID" : ele["Q_UserID"]}
+        query1 = U_myCollection.find_one(filt_u)
+        output.append(query1["U_gender"])
+    num = query.count()
+    return {"Result" : output, "Amount": num}
+
+
+@app.route('/get_graph3', methods=['GET'])
+def get_graph3():
+    data = request.json
+    filt = { "Q_shopID" : data["Q_shopID"]}
+    query = Q_myCollection.find(filt)
+    output = []
+    for ele in query:
+        filt_u = { "U_UserID" : ele["Q_UserID"]}
+        query1 = U_myCollection.find_one(filt_u)
+        output.append(query1["U_occupation"])
+    num = query.count()
+    return {"Result" : output, "Amount": num}
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port='3000', debug=True)
