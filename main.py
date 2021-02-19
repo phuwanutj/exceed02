@@ -364,7 +364,7 @@ def add_wristband():
     return {'result': 'Created successfully'}
 
 
-@app.route('/get_wristband', methods=['GET'])
+@app.route('/get_wristband', methods=['POST'])
 def get_wristband():
     data = request.json
     filt = { "Wr_status" : data["Wr_status"]}
@@ -381,16 +381,18 @@ def get_graph1():
     data = request.json
     filt = { "Q_shopID" : data["Q_shopID"]}
     query = Q_myCollection.find(filt)
-    output = {}
+    x = []
     for ele in query:
-        filt_u = { "U_UserID" : ele["Q_UserID"]}
-        query1 = U_myCollection.find_one(filt_u)
-        filt_age = {"U_age": query1["U_age"], "U_UserID" : query1["U_UserID"]}
-        query2 = U_myCollection.find(filt_age)
-        if query1["U_age"] not in output:
-            output[query1["U_age"]] = query2.count()
-        else:
-            output[query1["U_age"]] += 1
+        x.append(ele["U_UserID"])
+    output = {
+        "15-25": U_myCollection.find({"U_age": {"$gte": 15, "$lt": 25}, "U_UserID": {"$in": x}}).count(),
+        "25-35": U_myCollection.find({"U_age": {"$gte": 25, "$lt": 35}, "U_UserID": {"$in": x}}).count(),
+        "35-45": U_myCollection.find({"U_age": {"$gte": 35, "$lt": 45}, "U_UserID": {"$in": x}}).count(),
+        "45-55": U_myCollection.find({"U_age": {"$gte": 45, "$lt": 55}, "U_UserID": {"$in": x}}).count(),
+        "55-65": U_myCollection.find({"U_age": {"$gte": 55, "$lt": 65}, "U_UserID": {"$in": x}}).count(),
+        "65-75": U_myCollection.find({"U_age": {"$gte": 65, "$lt": 75}, "U_UserID": {"$in": x}}).count(),
+        "75-85": U_myCollection.find({"U_age": {"$gte": 75, "$lt": 85}, "U_UserID": {"$in": x}}).count(),
+    }
     return output
 
 
@@ -399,16 +401,17 @@ def get_graph2():
     data = request.json
     filt = { "Q_shopID" : data["Q_shopID"]}
     query = Q_myCollection.find(filt)
-    output = {}
+    x = []
     for ele in query:
-        filt_u = { "U_UserID" : ele["Q_UserID"]}
-        query1 = U_myCollection.find_one(filt_u)
-        filt_gender = {"U_gender": query1["U_gender"], "U_UserID" : query1["U_UserID"]}
-        query2 = U_myCollection.find(filt_gender)
-        if query1["U_gender"] not in output:
-            output[query1["U_gender"]] = query2.count()
-        else:
-            output[query1["U_gender"]] += 1
+        x.append(ele["U_UserID"])
+    filt_m = {"U_gender": "Male", "U_UserID": {"$in": x}}
+    filt_f = {"U_gender": "Female", "U_UserID": {"$in": x}}
+    filt_o = {"U_gender": "Other", "U_UserID": {"$in": x}}
+    output = {
+        "Male": U_myCollection.find(filt_m).count(),
+        "Female": U_myCollection.find(filt_f).count(),
+        "Other": U_myCollection.find(filt_o).count(),
+    }
     return output
 
 
@@ -432,15 +435,17 @@ def get_graph3():
 
 @app.route('/get_graph4', methods=['GET'])
 def get_graph4():
-    filt = {"W_status": 1}
-    query = W_myCollection.find(filt)
-    output = {}
-    for ele in query:
-        num = round((ele["W_timestamp_out"]-ele["W_timestamp_in"])/3600)
-        if num not in output:
-            output[num] = 1
-        else:
-            output[num] += 1
+    output = {
+        "30-60": W_myCollection.find({"W_status": 1, }).count(),
+        "60-90": W_myCollection.find({"W_status": 1, }).count(),
+        "90-120": W_myCollection.find({"W_status": 1, }).count(),
+        "120-150": W_myCollection.find({"W_status": 1, }).count(),
+        "150-180": W_myCollection.find({"W_status": 1, }).count(),
+        "180-210": W_myCollection.find({"W_status": 1, }).count(),
+        "210-240": W_myCollection.find({"W_status": 1, }).count(),
+        "240-270": W_myCollection.find({"W_status": 1, }).count(),
+        "270-300": W_myCollection.find({"W_status": 1, }).count(),
+    }
     return output
 
 
@@ -448,16 +453,100 @@ def get_graph4():
 def get_graph5():
     filt = {}
     query = W_myCollection.find(filt)
-    output = {}
-    for ele in query:
-        time = ele["W_timestamp_in"]
-        dt = datetime.fromtimestamp(time)
-        num = dt.hour
-        if num not in output:
-            output[num] = 1
-        else:
-            output[num] += 1
+    output = {
+        "1 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "2 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "3 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "4 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "5 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "6 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "7 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "8 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "9 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "10 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "11 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "12 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "13 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "14 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "15 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "16 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "17 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "18 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "19 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "20 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "21 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "22 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "23 PM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+        "12 AM": W_myCollection.find({"W_timestamp_in": {'$gte': b(246060) , '$lt': (b+1)(246060)} }).count(),
+    }
     return output
+
+
+@app.route('/get_graph6', methods=['GET'])
+def get_graph6():
+    output = {}
+    for i in range(0,15):
+        output[C_myCollection.find_one({"C_catId": i+1})["C_catName"]] = U_myCollection.find({"U_catId": i+1}).count()
+    return output
+
+
+@app.route('/now_queue', methods=['POST'])
+def now_queue():
+    data = request.json
+    filt = { "Q_Username" : data["Q_Username"]
+            ,"Q_password": data["Q_password"]
+            ,"Q_status" : 0 }
+    query = Q_myCollection.find(filt).count()
+    if(query==0):
+        return { "Result" : "Wrong Username Password or Not have data in queue"  }
+    query = Q_myCollection.find_one(filt)
+    queryc = Q_myCollection.find({"Q_status":1}).count()
+    queuenow = query["Q_queueID"] - queryc
+    return {    "now" : queuenow
+            ,"Q_queueID" : query["Q_queueID"]
+            }
+
+
+@app.route('/update_timestamp', methods=['PATCH'])
+def update_timestamp():
+    data = request.json
+    filt = {'W_wristbandID': data["W_wristbandID"], 'W_status': 0}
+    query = W_myCollection.find_one(filt)
+    shop = S_myCollection.find_one({'S_shopID': 0})
+    timestampp = datetime.timestamp(datetime.now())
+
+
+    if (data["W_status"] == 0) :
+        updated_content = {"$set": {'W_status' : 0, 'W_timestamp_in': timestampp }}
+        W_myCollection.update_one(filt, updated_content)
+        updated_content = {"$set": {'S_lastest_time_enter': timestampp }}
+        S_myCollection.update_one({'S_shopID': 0}, updated_content)
+        #return {'result' : shop["S_time_limit"]}
+        return {
+                'result' : "Start"
+                }
+    elif (data["W_status"] == 1) :
+        updated_content = {"$set": {'W_status' : 1, 'W_timestamp_out': timestampp }}
+        W_myCollection.update_one(filt, updated_content)
+        Wr_myCollection.update_one({"Wr_wristbandID" : data["W_wristbandID"]},{"$set" : {"Wr_status":0}})
+        updated_content = {"$set": {'S_lastest_time_left': timestampp }}
+        S_myCollection.update_one({'S_shopID': 0}, updated_content)
+        return {'result': "Time out"}
+
+
+
+@app.route('/infor', methods=['GET'])
+def information():
+    shop = S_myCollection.find_one({'S_shopID': 0})
+    a = datetime.now().timestamp()
+    b = a//(24*60*60)
+    filt = { 'W_timestamp_in': {'$gte': b*(24*60*60) , '$lt': (b+1)*(24*60*60)} }
+    num = W_myCollection.find(filt).count()
+    return {
+            "S_lastest_time_enter" : shop["S_lastest_time_enter"]
+            ,'S_lastest_time_left' : shop['S_lastest_time_left']
+            ,"Total" : num
+            }
 
 
 if __name__ == "__main__":
