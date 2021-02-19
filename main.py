@@ -238,23 +238,6 @@ def update_lastest_time_left():
     return {'result' : 'Updated successfully!'}
 
 
-@app.route('/update_timestamp', methods=['PATCH'])
-def update_timestamp():
-    data = request.json
-
-    filt = {'W_wristbandID': data["W_wristbandID"], 'W_status': 0}
-    query = W_myCollection.find_one(filt)
-    shop = S_myCollection.find_one({'S_shopID': 0})
-    if (data["W_status"] == 0) :
-        updated_content = {"$set": {'W_status' : 0, 'W_timestamp_in': datetime.timestamp(datetime.now())}}
-        W_myCollection.update_one(filt, updated_content)
-        return {'result' : shop["S_time_limit"]}
-    elif (data["W_status"] == 1 and query["W_status"] == 0) :
-        updated_content = {"$set": {'W_status' : 1, 'W_timestamp_out': datetime.timestamp(datetime.now())}}
-        W_myCollection.update_one(filt, updated_content)
-        return {'result': "Time out"}
-
-
 @app.route('/member', methods=['POST'])
 def user_data_input():
     data = request.json
@@ -383,7 +366,7 @@ def get_graph1():
     query = Q_myCollection.find(filt)
     x = []
     for ele in query:
-        x.append(ele["U_UserID"])
+        x.append(ele["Q_UserID"])
     output = {
         "15-25": U_myCollection.find({"U_age": {"$gte": 15, "$lt": 25}, "U_UserID": {"$in": x}}).count(),
         "25-35": U_myCollection.find({"U_age": {"$gte": 25, "$lt": 35}, "U_UserID": {"$in": x}}).count(),
@@ -403,14 +386,14 @@ def get_graph2():
     query = Q_myCollection.find(filt)
     x = []
     for ele in query:
-        x.append(ele["U_UserID"])
+        x.append(ele["Q_UserID"])
     filt_m = {"U_gender": "Male", "U_UserID": {"$in": x}}
     filt_f = {"U_gender": "Female", "U_UserID": {"$in": x}}
-    filt_o = {"U_gender": "Other", "U_UserID": {"$in": x}}
+    filt_o = {"U_gender": "Not Specified", "U_UserID": {"$in": x}}
     output = {
         "Male": U_myCollection.find(filt_m).count(),
         "Female": U_myCollection.find(filt_f).count(),
-        "Other": U_myCollection.find(filt_o).count(),
+        "Not Specified": U_myCollection.find(filt_o).count(),
     }
     return output
 
@@ -445,6 +428,16 @@ def get_graph4():
         "210-240": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 210, "$lt": 240}}).count(),
         "240-270": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 240, "$lt": 270}}).count(),
         "270-300": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 270, "$lt": 300}}).count(),
+        "300-330": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 300, "$lt": 330}}).count(),
+        "330-360": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 330, "$lt": 360}}).count(),
+        "360-330": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 360, "$lt": 390}}).count(),
+        "390-360": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 390, "$lt": 420}}).count(),
+        "420-450": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 420, "$lt": 450}}).count(),
+        "450-480": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 450, "$lt": 480}}).count(),
+        "480-510": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 480, "$lt": 510}}).count(),
+        "510-540": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 510, "$lt": 540}}).count(),
+        "540-570": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 540, "$lt": 570}}).count(),
+        "570-600": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 570, "$lt": 600}}).count(),
     }
     return output
 
@@ -511,13 +504,19 @@ def now_queue():
 def update_timestamp():
     data = request.json
     filt = {'W_wristbandID': data["W_wristbandID"], 'W_status': 0}
+    query = W_myCollection.find(filt).count()
+    if(query == 0):
+        return { "Result" : "Error"  }
     query = W_myCollection.find_one(filt)
     shop = S_myCollection.find_one({'S_shopID': 0})
     timestampp = datetime.timestamp(datetime.now())
+    a = timestampp
+    b = (a//(24*60*60))*(24*60*60)
+    c = ((a-b)//(60*60) + 7)%24
 
 
     if (data["W_status"] == 0) :
-        updated_content = {"$set": {'W_status' : 0, 'W_timestamp_in': timestampp }}
+        updated_content = {"$set": {'W_status' : 0, 'W_timestamp_in': timestampp ,"W_startat" : c}}
         W_myCollection.update_one(filt, updated_content)
         updated_content = {"$set": {'S_lastest_time_enter': timestampp }}
         S_myCollection.update_one({'S_shopID': 0}, updated_content)
@@ -526,13 +525,13 @@ def update_timestamp():
                 'result' : "Start"
                 }
     elif (data["W_status"] == 1) :
-        updated_content = {"$set": {'W_status' : 1, 'W_timestamp_out': timestampp }}
+        diff = (timestampp - query["W_timestamp_in"])//60
+        updated_content = {"$set": {'W_status' : 1, 'W_timestamp_out': timestampp, 'W_timediff' : diff }}
         W_myCollection.update_one(filt, updated_content)
         Wr_myCollection.update_one({"Wr_wristbandID" : data["W_wristbandID"]},{"$set" : {"Wr_status":0}})
         updated_content = {"$set": {'S_lastest_time_left': timestampp }}
         S_myCollection.update_one({'S_shopID': 0}, updated_content)
         return {'result': "Time out"}
-
 
 
 @app.route('/infor', methods=['GET'])
