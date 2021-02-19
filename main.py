@@ -326,16 +326,24 @@ def add_wristband():
     query = W_myCollection.find(filt).count()
     if (query>0):
         return { "Result" : "This wristband is using now."}
+
+    filt = { "U_Username": data['W_Username']}
+    query = U_myCollection.find(filt).count()
+    if(query==0):
+        return { "Result" : "Wrong Username"}
+    query = U_myCollection.find_one(filt)
+
     myInsert = {
                 "W_timestamp_in": 0,
                 "W_timestamp_out": 0,
                 "W_status": 0,
-                "W_UserID": data["W_UserID"],
+                "W_UserID": query["U_UserID"],
                 "W_wristbandID": data["W_wristbandID"],
+                "W_Username" : data['W_Username']
             }
     W_myCollection.insert_one(myInsert)
 
-    filt = { "Wr_wristbandID": data['Wr_wristbandID'] }
+    filt = { "Wr_wristbandID": data['W_wristbandID'] }
     query = Wr_myCollection.find_one(filt)
     output = {
             "Wr_wristbandID" : query["Wr_wristbandID"]
@@ -419,6 +427,7 @@ def get_graph3():
 @app.route('/get_graph4', methods=['GET'])
 def get_graph4():
     output = {
+        "0-30": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 0, "$lt": 30}}).count(),
         "30-60": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 30, "$lt": 60}}).count(),
         "60-90": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 60, "$lt": 90}}).count(),
         "90-120": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 90, "$lt": 120}}).count(),
@@ -470,7 +479,7 @@ def get_graph5():
         "21 PM": W_myCollection.find({"W_startat": 21}).count(),
         "22 PM": W_myCollection.find({"W_startat": 22}).count(),
         "23 PM": W_myCollection.find({"W_startat": 23}).count(),
-        "12 AM": W_myCollection.find({"W_startat": 24}).count(),
+        "12 AM": W_myCollection.find({"W_startat": 0}).count(),
     }
     return output
 
