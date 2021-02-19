@@ -78,6 +78,7 @@ def find_shop():
                 "S_name": ele["S_name"],
                 "S_total_amount": ele["S_total_amount"],
                 "S_limit_amount": ele["S_limi_amount"],
+                "S_time_limit": ele["S_time_limit"],
                 "S_current_amount": ele["S_current_amount"],
                 "S_lastest_time_enter": ele["S_lastest_time_enter"],
                 "S_lastest_time_left": ele["S_lastest_time_left"],
@@ -117,8 +118,7 @@ def find_all_queue():
                 "Q_queueID": ele["Q_queueID"],
                 "Q_userID": ele["Q_userID"],
                 "Q_shopID": ele["Q_shopID"],
-                "Q_createDate": ele["Q_createDate"],
-                "Q_receiveDate": ele["Q_receiveDate"],
+                "Q_updateDate": ele["Q_createDate"],
                 "Q_status": ele["Q_status"],
                 })
 
@@ -139,8 +139,7 @@ def find_queue():
                 "Q_queueID": ele["Q_queueID"],
                 "Q_userID": ele["Q_userID"],
                 "Q_shopID": ele["Q_shopID"],
-                "Q_createDate": ele["Q_createDate"],
-                "Q_receiveDate": ele["Q_receiveDate"],
+                "Q_updateDate": ele["Q_createDate"],
                 "Q_status": ele["Q_status"],
                 })
 
@@ -382,13 +381,17 @@ def get_graph1():
     data = request.json
     filt = { "Q_shopID" : data["Q_shopID"]}
     query = Q_myCollection.find(filt)
-    output = []
+    output = {}
     for ele in query:
         filt_u = { "U_UserID" : ele["Q_UserID"]}
         query1 = U_myCollection.find_one(filt_u)
-        output.append(query1["U_age"])
-    num = query.count()
-    return {"Result" : output, "Amount": num}
+        filt_age = {"U_age": query1["U_age"], "U_UserID" : query1["U_UserID"]}
+        query2 = U_myCollection.find(filt_age)
+        if query1["U_age"] not in output:
+            output[query1["U_age"]] = query2.count()
+        else:
+            output[query1["U_age"]] += 1
+    return output
 
 
 @app.route('/get_graph2', methods=['GET'])
@@ -396,13 +399,17 @@ def get_graph2():
     data = request.json
     filt = { "Q_shopID" : data["Q_shopID"]}
     query = Q_myCollection.find(filt)
-    output = []
+    output = {}
     for ele in query:
         filt_u = { "U_UserID" : ele["Q_UserID"]}
         query1 = U_myCollection.find_one(filt_u)
-        output.append(query1["U_gender"])
-    num = query.count()
-    return {"Result" : output, "Amount": num}
+        filt_gender = {"U_gender": query1["U_gender"], "U_UserID" : query1["U_UserID"]}
+        query2 = U_myCollection.find(filt_gender)
+        if query1["U_gender"] not in output:
+            output[query1["U_gender"]] = query2.count()
+        else:
+            output[query1["U_gender"]] += 1
+    return output
 
 
 @app.route('/get_graph3', methods=['GET'])
@@ -410,13 +417,47 @@ def get_graph3():
     data = request.json
     filt = { "Q_shopID" : data["Q_shopID"]}
     query = Q_myCollection.find(filt)
-    output = []
+    output = {}
     for ele in query:
         filt_u = { "U_UserID" : ele["Q_UserID"]}
         query1 = U_myCollection.find_one(filt_u)
-        output.append(query1["U_occupation"])
-    num = query.count()
-    return {"Result" : output, "Amount": num}
+        filt_occupation = {"U_occupation": query1["U_occupation"], "U_UserID" : query1["U_UserID"]}
+        query2 = U_myCollection.find(filt_occupation)
+        if query1["U_occupation"] not in output:
+            output[query1["U_occupation"]] = query2.count()
+        else:
+            output[query1["U_occupation"]] += 1
+    return output
+
+
+@app.route('/get_graph4', methods=['GET'])
+def get_graph4():
+    filt = {"W_status": 1}
+    query = W_myCollection.find(filt)
+    output = {}
+    for ele in query:
+        num = round((ele["W_timestamp_out"]-ele["W_timestamp_in"])/3600)
+        if num not in output:
+            output[num] = 1
+        else:
+            output[num] += 1
+    return output
+
+
+@app.route('/get_graph5', methods=['GET'])
+def get_graph5():
+    filt = {}
+    query = W_myCollection.find(filt)
+    output = {}
+    for ele in query:
+        time = ele["W_timestamp_in"]
+        dt = datetime.fromtimestamp(time)
+        num = dt.hour
+        if num not in output:
+            output[num] = 1
+        else:
+            output[num] += 1
+    return output
 
 
 if __name__ == "__main__":
