@@ -1,8 +1,12 @@
 from flask import Flask, request
 from flask_pymongo import PyMongo
 from datetime import datetime
+from flask_cors import CORS, cross_origin
+
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/": {"origins": "*"}})
+#app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['MONGO_URI'] = 'mongodb://exceed_group02:tg52cdr5@158.108.182.0:2255/exceed_group02'
 mongo = PyMongo(app)
 
@@ -15,6 +19,7 @@ Wr_myCollection = mongo.db.Wr
 
 
 @app.route('/find_all_user', methods=['GET'])
+@cross_origin()
 def find_all_user():
 
     filt = {}
@@ -39,6 +44,7 @@ def find_all_user():
 
 
 @app.route('/find_user', methods=['GET'])
+@cross_origin()
 def find_user():
 
     username = request.args.get('U_Username')
@@ -65,6 +71,7 @@ def find_user():
 
 
 @app.route('/find_shop', methods=['GET'])
+@cross_origin()
 def find_shop():
 
     filt = {}
@@ -89,6 +96,7 @@ def find_shop():
 
 
 @app.route('/find_category', methods=['GET'])
+@cross_origin()
 def find_category():
 
     filt = {}
@@ -106,6 +114,7 @@ def find_category():
 
 
 @app.route('/find_all_queue', methods=['GET'])
+@cross_origin()
 def find_all_queue():
 
     filt = {}
@@ -126,6 +135,7 @@ def find_all_queue():
 
 
 @app.route('/find_queue', methods=['GET'])
+@cross_origin()
 def find_queue():
 
     id = request.args.get('Q_quueueID')
@@ -147,6 +157,7 @@ def find_queue():
 
 
 @app.route('/find_wristband', methods=['GET'])
+@cross_origin()
 def find_wristband():
 
     filt = {}
@@ -303,6 +314,7 @@ def queue_data_update():
 
 
 @app.route('/queue', methods=['GET'])
+@cross_origin()
 def queue_data_get():
     filt = { "Q_status" : 0 }
     query = Q_myCollection.find(filt)
@@ -367,37 +379,87 @@ def get_wristband():
             ,"Wr_status" : data["Wr_status"]}
 
 
+# @app.route('/get_graph1', methods=['GET'])
+# @cross_origin()
+# def get_graph1():
+#     ID = request.args.get('id')
+#     filt = { "Q_shopID" : int(ID)}
+#     query = Q_myCollection.find(filt)
+#     x = []
+#     for ele in query:
+#         x.append(ele["Q_UserID"])
+#     output = {
+#         "15-25": U_myCollection.find({"U_age": {"$gte": 15, "$lt": 25}, "U_UserID": {"$in": x}}).count(),
+#         "25-35": U_myCollection.find({"U_age": {"$gte": 25, "$lt": 35}, "U_UserID": {"$in": x}}).count(),
+#         "35-45": U_myCollection.find({"U_age": {"$gte": 35, "$lt": 45}, "U_UserID": {"$in": x}}).count(),
+#         "45-55": U_myCollection.find({"U_age": {"$gte": 45, "$lt": 55}, "U_UserID": {"$in": x}}).count(),
+#         "55-65": U_myCollection.find({"U_age": {"$gte": 55, "$lt": 65}, "U_UserID": {"$in": x}}).count(),
+#         "65-75": U_myCollection.find({"U_age": {"$gte": 65, "$lt": 75}, "U_UserID": {"$in": x}}).count(),
+#         "75-85": U_myCollection.find({"U_age": {"$gte": 75, "$lt": 85}, "U_UserID": {"$in": x}}).count(),
+#     }
+#     return output
+#
+#
+# @app.route('/get_graph2', methods=['GET'])
+# @cross_origin()
+# def get_graph2():
+#     ID = request.args.get('id')
+#     filt = { "Q_shopID" : int(ID)}
+#     query = Q_myCollection.find(filt)
+#     x = []
+#     for ele in query:
+#         x.append(ele["Q_UserID"])
+#     filt_m = {"U_gender": "Male", "U_UserID": {"$in": x}}
+#     filt_f = {"U_gender": "Female", "U_UserID": {"$in": x}}
+#     filt_o = {"U_gender": "Not Specified", "U_UserID": {"$in": x}}
+#     output = {
+#         "Male": U_myCollection.find(filt_m).count(),
+#         "Female": U_myCollection.find(filt_f).count(),
+#         "Not Specified": U_myCollection.find(filt_o).count(),
+#     }
+#     return output
+#
+#
+# @app.route('/get_graph3', methods=['GET'])
+# @cross_origin()
+# def get_graph3():
+#     ID = request.args.get('id')
+#     filt = { "Q_shopID" : int(ID)}
+#     query = Q_myCollection.find(filt)
+#     output = {}
+#     for ele in query:
+#         filt_u = { "U_UserID" : ele["Q_UserID"]}
+#         query1 = U_myCollection.find_one(filt_u)
+#         filt_occupation = {"U_occupation": query1["U_occupation"], "U_UserID" : query1["U_UserID"]}
+#         query2 = U_myCollection.find(filt_occupation)
+#         if query1["U_occupation"] not in output:
+#             output[query1["U_occupation"]] = query2.count()
+#         else:
+#             output[query1["U_occupation"]] += 1
+#     return output
+
+
 @app.route('/get_graph1', methods=['GET'])
+@cross_origin()
 def get_graph1():
-    ID = request.args.get('id')
-    filt = { "Q_shopID" : int(ID)}
-    query = Q_myCollection.find(filt)
-    x = []
-    for ele in query:
-        x.append(ele["Q_UserID"])
     output = {
-        "15-25": U_myCollection.find({"U_age": {"$gte": 15, "$lt": 25}, "U_UserID": {"$in": x}}).count(),
-        "25-35": U_myCollection.find({"U_age": {"$gte": 25, "$lt": 35}, "U_UserID": {"$in": x}}).count(),
-        "35-45": U_myCollection.find({"U_age": {"$gte": 35, "$lt": 45}, "U_UserID": {"$in": x}}).count(),
-        "45-55": U_myCollection.find({"U_age": {"$gte": 45, "$lt": 55}, "U_UserID": {"$in": x}}).count(),
-        "55-65": U_myCollection.find({"U_age": {"$gte": 55, "$lt": 65}, "U_UserID": {"$in": x}}).count(),
-        "65-75": U_myCollection.find({"U_age": {"$gte": 65, "$lt": 75}, "U_UserID": {"$in": x}}).count(),
-        "75-85": U_myCollection.find({"U_age": {"$gte": 75, "$lt": 85}, "U_UserID": {"$in": x}}).count(),
+        "15-25": U_myCollection.find({"U_age": {"$gte": 15, "$lt": 25}}).count(),
+        "25-35": U_myCollection.find({"U_age": {"$gte": 25, "$lt": 35}}).count(),
+        "35-45": U_myCollection.find({"U_age": {"$gte": 35, "$lt": 45}}).count(),
+        "45-55": U_myCollection.find({"U_age": {"$gte": 45, "$lt": 55}}).count(),
+        "55-65": U_myCollection.find({"U_age": {"$gte": 55, "$lt": 65}}).count(),
+        "65-75": U_myCollection.find({"U_age": {"$gte": 65, "$lt": 75}}).count(),
+        "75-85": U_myCollection.find({"U_age": {"$gte": 75, "$lt": 85}}).count(),
     }
     return output
 
 
 @app.route('/get_graph2', methods=['GET'])
+@cross_origin()
 def get_graph2():
-    ID = request.args.get('id')
-    filt = { "Q_shopID" : int(ID)}
-    query = Q_myCollection.find(filt)
-    x = []
-    for ele in query:
-        x.append(ele["Q_UserID"])
-    filt_m = {"U_gender": "Male", "U_UserID": {"$in": x}}
-    filt_f = {"U_gender": "Female", "U_UserID": {"$in": x}}
-    filt_o = {"U_gender": "Not Specified", "U_UserID": {"$in": x}}
+    filt_m = {"U_gender": "Male"}
+    filt_f = {"U_gender": "Female"}
+    filt_o = {"U_gender": "Not Specified"}
     output = {
         "Male": U_myCollection.find(filt_m).count(),
         "Female": U_myCollection.find(filt_f).count(),
@@ -407,24 +469,21 @@ def get_graph2():
 
 
 @app.route('/get_graph3', methods=['GET'])
+@cross_origin()
 def get_graph3():
-    ID = request.args.get('id')
-    filt = { "Q_shopID" : int(ID)}
-    query = Q_myCollection.find(filt)
+    filt = {}
+    query = U_myCollection.find(filt)
     output = {}
     for ele in query:
-        filt_u = { "U_UserID" : ele["Q_UserID"]}
-        query1 = U_myCollection.find_one(filt_u)
-        filt_occupation = {"U_occupation": query1["U_occupation"], "U_UserID" : query1["U_UserID"]}
-        query2 = U_myCollection.find(filt_occupation)
-        if query1["U_occupation"] not in output:
-            output[query1["U_occupation"]] = query2.count()
+        if ele["U_occupation"] not in output:
+            output[ele["U_occupation"]] = 1
         else:
-            output[query1["U_occupation"]] += 1
+            output[ele["U_occupation"]] += 1
     return output
 
 
 @app.route('/get_graph4', methods=['GET'])
+@cross_origin()
 def get_graph4():
     output = {
         "0-30": W_myCollection.find({"W_status": 1, "W_timediff": {"$gte": 0, "$lt": 30}}).count(),
@@ -452,6 +511,7 @@ def get_graph4():
 
 
 @app.route('/get_graph5', methods=['GET'])
+@cross_origin()
 def get_graph5():
     filt = {}
     query = W_myCollection.find(filt)
@@ -468,23 +528,24 @@ def get_graph5():
         "10 AM": W_myCollection.find({"W_startat": 10}).count(),
         "11 AM": W_myCollection.find({"W_startat": 11}).count(),
         "12 PM": W_myCollection.find({"W_startat": 12}).count(),
-        "13 PM": W_myCollection.find({"W_startat": 13}).count(),
-        "14 PM": W_myCollection.find({"W_startat": 14}).count(),
-        "15 PM": W_myCollection.find({"W_startat": 15}).count(),
-        "16 PM": W_myCollection.find({"W_startat": 16}).count(),
-        "17 PM": W_myCollection.find({"W_startat": 17}).count(),
-        "18 PM": W_myCollection.find({"W_startat": 18}).count(),
-        "19 PM": W_myCollection.find({"W_startat": 19}).count(),
-        "20 PM": W_myCollection.find({"W_startat": 20}).count(),
-        "21 PM": W_myCollection.find({"W_startat": 21}).count(),
-        "22 PM": W_myCollection.find({"W_startat": 22}).count(),
-        "23 PM": W_myCollection.find({"W_startat": 23}).count(),
+        "1 PM": W_myCollection.find({"W_startat": 13}).count(),
+        "2 PM": W_myCollection.find({"W_startat": 14}).count(),
+        "3 PM": W_myCollection.find({"W_startat": 15}).count(),
+        "4 PM": W_myCollection.find({"W_startat": 16}).count(),
+        "5 PM": W_myCollection.find({"W_startat": 17}).count(),
+        "6 PM": W_myCollection.find({"W_startat": 18}).count(),
+        "7 PM": W_myCollection.find({"W_startat": 19}).count(),
+        "8 PM": W_myCollection.find({"W_startat": 20}).count(),
+        "9 PM": W_myCollection.find({"W_startat": 21}).count(),
+        "10 PM": W_myCollection.find({"W_startat": 22}).count(),
+        "11 PM": W_myCollection.find({"W_startat": 23}).count(),
         "12 AM": W_myCollection.find({"W_startat": 0}).count(),
     }
     return output
 
 
 @app.route('/get_graph6', methods=['GET'])
+@cross_origin()
 def get_graph6():
     output = {}
     for i in range(0,15):
@@ -544,6 +605,7 @@ def update_timestamp():
 
 
 @app.route('/infor', methods=['GET'])
+@cross_origin()
 def information():
     shop = S_myCollection.find_one({'S_shopID': 0})
     a = datetime.now().timestamp()
