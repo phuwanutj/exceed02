@@ -178,6 +178,7 @@ def find_wristband():
 
 
 @app.route('/update_shop_total_amount', methods=['PATCH'])
+@cross_origin()
 def update_total_amount():
     data = request.json
 
@@ -190,6 +191,7 @@ def update_total_amount():
 
 
 @app.route('/update_shop_limit_amount', methods=['PATCH'])
+@cross_origin()
 def update_limit_amount():
     data = request.json
 
@@ -202,6 +204,7 @@ def update_limit_amount():
 
 
 @app.route('/update_shop_current_amount', methods=['PATCH'])
+@cross_origin()
 def update_current_amount():
     data = request.json
 
@@ -214,6 +217,7 @@ def update_current_amount():
 
 
 @app.route('/update_shop_time_limit', methods=['PATCH'])
+@cross_origin()
 def update_limit_limit():
     data = request.json
 
@@ -226,6 +230,7 @@ def update_limit_limit():
 
 
 @app.route('/update_shop_lastest_time_enter', methods=['PATCH'])
+@cross_origin()
 def update_lastest_time_enter():
     data = request.json
 
@@ -238,6 +243,7 @@ def update_lastest_time_enter():
 
 
 @app.route('/update_shop_lastest_time_left', methods=['PATCH'])
+@cross_origin()
 def update_lastest_time_left():
     data = request.json
 
@@ -250,6 +256,7 @@ def update_lastest_time_left():
 
 
 @app.route('/member', methods=['POST'])
+@cross_origin()
 def user_data_input():
     data = request.json
     filt = { "U_Username": data['U_Username']}
@@ -262,6 +269,7 @@ def user_data_input():
 
 
 @app.route('/queue', methods=['POST'])
+@cross_origin()
 def queue_data_input():
     data = request.json
     filt = { "U_Username": data['Q_Username'] , "U_password" : data['Q_password']}
@@ -288,6 +296,7 @@ def queue_data_input():
 
 
 @app.route('/queue', methods=['PATCH'])
+@cross_origin()
 def queue_data_update():
     data = request.json
     filt = { "Q_queueID": data['Q_queueID']}
@@ -332,6 +341,7 @@ def queue_data_get():
 
 
 @app.route('/add_wristband', methods=['POST'])
+@cross_origin()
 def add_wristband():
     data = request.json
     filt = { "W_wristbandID": data['W_wristbandID'] , "W_status" : 0}
@@ -367,7 +377,8 @@ def add_wristband():
     return {'result': 'Created successfully'}
 
 
-@app.route('/get_wristband', methods=['POST'])
+@app.route('/get_wristband', methods=['get'])
+@cross_origin()
 def get_wristband():
     data = request.json
     filt = { "Wr_status" : data["Wr_status"]}
@@ -554,6 +565,7 @@ def get_graph6():
 
 
 @app.route('/now_queue', methods=['POST'])
+@cross_origin()
 def now_queue():
     data = request.json
     filt = { "Q_Username" : data["Q_Username"]
@@ -571,6 +583,7 @@ def now_queue():
 
 
 @app.route('/update_timestamp', methods=['PATCH'])
+@cross_origin()
 def update_timestamp():
     data = request.json
     filt = {'W_wristbandID': data["W_wristbandID"], 'W_status': 0}
