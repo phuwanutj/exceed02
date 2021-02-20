@@ -369,8 +369,8 @@ def get_wristband():
 
 @app.route('/get_graph1', methods=['GET'])
 def get_graph1():
-    data = request.json
-    filt = { "Q_shopID" : data["Q_shopID"]}
+    ID = request.args.get('id')
+    filt = { "Q_shopID" : int(ID)}
     query = Q_myCollection.find(filt)
     x = []
     for ele in query:
@@ -389,8 +389,8 @@ def get_graph1():
 
 @app.route('/get_graph2', methods=['GET'])
 def get_graph2():
-    data = request.json
-    filt = { "Q_shopID" : data["Q_shopID"]}
+    ID = request.args.get('id')
+    filt = { "Q_shopID" : int(ID)}
     query = Q_myCollection.find(filt)
     x = []
     for ele in query:
@@ -408,8 +408,8 @@ def get_graph2():
 
 @app.route('/get_graph3', methods=['GET'])
 def get_graph3():
-    data = request.json
-    filt = { "Q_shopID" : data["Q_shopID"]}
+    ID = request.args.get('id')
+    filt = { "Q_shopID" : int(ID)}
     query = Q_myCollection.find(filt)
     output = {}
     for ele in query:
