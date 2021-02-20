@@ -377,7 +377,7 @@ def add_wristband():
     return {'result': 'Created successfully'}
 
 
-@app.route('/get_wristband', methods=['get'])
+@app.route('/get_wristband', methods=['POST'])
 @cross_origin()
 def get_wristband():
     data = request.json
